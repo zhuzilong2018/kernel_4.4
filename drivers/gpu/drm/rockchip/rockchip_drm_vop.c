@@ -1116,6 +1116,8 @@ static void vop_crtc_enable(struct drm_crtc *crtc)
 	VOP_CTRL_SET(vop, pin_pol, val);
 	switch (s->output_type) {
 	case DRM_MODE_CONNECTOR_LVDS:
+	case DRM_MODE_CONNECTOR_VGA:
+	case DRM_MODE_CONNECTOR_TV:
 		VOP_CTRL_SET(vop, rgb_en, 1);
 		VOP_CTRL_SET(vop, rgb_pin_pol, val);
 		break;
@@ -1165,6 +1167,19 @@ static int vop_zpos_cmp(const void *a, const void *b)
 
 	return pa->zpos - pb->zpos;
 }
+
+int rockchip_drm_crtc_mode_config(struct drm_crtc *crtc,
+				  int connector_type,
+				  int out_mode)
+{
+	struct rockchip_crtc_state *s = to_rockchip_crtc_state(crtc->state);
+
+    s->output_mode = out_mode;
+    s->output_type = connector_type;
+
+	return 0;
+}
+
 
 static int vop_crtc_atomic_check(struct drm_crtc *crtc,
 				 struct drm_crtc_state *crtc_state)

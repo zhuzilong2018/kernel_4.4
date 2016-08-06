@@ -678,6 +678,7 @@ static int rockchip_drm_load(struct drm_device *drm_dev, unsigned long flags)
 	struct rockchip_drm_private *private;
 	struct device *dev = drm_dev->dev;
 	struct drm_connector *connector;
+    struct drm_encoder *encoder;
 	struct iommu_group *group;
 	int ret;
 
@@ -741,6 +742,39 @@ static int rockchip_drm_load(struct drm_device *drm_dev, unsigned long flags)
 	ret = component_bind_all(dev, drm_dev);
 	if (ret)
 		goto err_detach_device;
+
+#if 1
+	/*
+	 * Attach rgb bridge to encoders needing it.
+	 */
+	list_for_each_entry(encoder, &drm_dev->mode_config.encoder_list, head) {
+		struct device_node *rgb_node;
+
+		if (!encoder->of_node)
+			continue;
+
+		rgb_node = of_parse_phandle(encoder->of_node,
+					    "rockchip,rgb-bridge", 0);
+		if (rgb_node) {
+			struct drm_bridge *bridge;
+
+			bridge = of_drm_find_bridge(rgb_node);
+			of_node_put(rgb_node);
+			if (!bridge) {
+				ret = -EPROBE_DEFER;
+				goto err_unbind;
+			}
+
+			encoder->bridge = bridge;
+			bridge->encoder = encoder;
+			ret = drm_bridge_attach(encoder->dev, bridge);
+			if (ret) {
+				DRM_ERROR("Failed to attach bridge to drm\n");
+				goto err_unbind;
+			}
+		}
+	}
+#endif
 
 	/*
 	 * All components are now added, we can publish the connector sysfs
@@ -1073,6 +1107,38 @@ static const struct dev_pm_ops rockchip_drm_pm_ops = {
 	SET_SYSTEM_SLEEP_PM_OPS(rockchip_drm_sys_suspend,
 				rockchip_drm_sys_resume)
 };
+
+/*
+ * @node: device tree node containing encoder input ports
+ * @encoder: drm_encoder
+ */
+int rockchip_drm_encoder_get_mux_id(struct device_node *node,
+				    struct drm_encoder *encoder)
+{
+	struct device_node *ep = NULL;
+	struct drm_crtc *crtc = encoder->crtc;
+	struct of_endpoint endpoint;
+	struct device_node *port;
+	int ret;
+
+	if (!node || !crtc)
+		return -EINVAL;
+
+	do {
+		ep = of_graph_get_next_endpoint(node, ep);
+		if (!ep)
+			break;
+
+		port = of_graph_get_remote_port(ep);
+		of_node_put(port);
+		if (port == crtc->port) {
+			ret = of_graph_parse_endpoint(ep, &endpoint);
+			return ret ?: endpoint.id;
+		}
+	} while (ep);
+
+	return -EINVAL;
+}
 
 static int compare_of(struct device *dev, void *data)
 {

@@ -1966,6 +1966,8 @@ static int dw_hdmi_register(struct drm_device *drm, struct dw_hdmi *hdmi)
 	hdmi->bridge = bridge;
 	bridge->driver_private = hdmi;
 	bridge->funcs = &dw_hdmi_bridge_funcs;
+    encoder->bridge = bridge;
+    bridge->encoder = encoder;
 	ret = drm_bridge_attach(drm, bridge);
 	if (ret) {
 		DRM_ERROR("Failed to initialize bridge with drm\n");

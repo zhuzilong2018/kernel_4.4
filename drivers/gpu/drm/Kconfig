@@ -106,6 +106,7 @@ config DRM_DMA_SYNC
 	  synchronization of shared dma-buf access between different drivers.
 
 source "drivers/gpu/drm/i2c/Kconfig"
+source "drivers/gpu/drm/components/Kconfig"
 
 config DRM_TDFX
 	tristate "3dfx Banshee/Voodoo3+"

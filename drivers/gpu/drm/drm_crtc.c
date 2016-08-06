@@ -857,6 +857,47 @@ static void drm_connector_get_cmdline_mode(struct drm_connector *connector)
 		      mode->interlace ?  " interlaced" : "");
 }
 
+static DEFINE_MUTEX(connector_lock);
+static LIST_HEAD(connector_list);
+
+int drm_connector_add(struct drm_connector *connector)
+{
+	mutex_lock(&connector_lock);
+	list_add_tail(&connector->list, &connector_list);
+	mutex_unlock(&connector_lock);
+
+	return 0;
+}
+EXPORT_SYMBOL(drm_connector_add);
+
+void drm_connector_remove(struct drm_connector *connector)
+{
+	mutex_lock(&connector_lock);
+	list_del_init(&connector->list);
+	mutex_unlock(&connector_lock);
+}
+EXPORT_SYMBOL(drm_connector_remove);
+
+#ifdef CONFIG_OF
+struct drm_connector *of_drm_find_connector(struct device_node *np)
+{
+	struct drm_connector *connector;
+
+	mutex_lock(&connector_lock);
+
+	list_for_each_entry(connector, &connector_list, list) {
+		if (connector->of_node == np) {
+			mutex_unlock(&connector_lock);
+			return connector;
+		}
+	}
+
+	mutex_unlock(&connector_lock);
+	return NULL;
+}
+EXPORT_SYMBOL(of_drm_find_connector);
+#endif
+
 /**
  * drm_connector_init - Init a preallocated connector
  * @dev: DRM device
@@ -1070,6 +1111,104 @@ void drm_connector_unplug_all(struct drm_device *dev)
 
 }
 EXPORT_SYMBOL(drm_connector_unplug_all);
+
+/**
+ * drm_bridge_init - initialize a drm transcoder/bridge
+ * @dev: drm device
+ * @bridge: transcoder/bridge to set up
+ * @funcs: bridge function table
+ *
+ * Initialises a preallocated bridge. Bridges should be
+ * subclassed as part of driver connector objects.
+ *
+ * Returns:
+ * Zero on success, error code on failure.
+ */
+ /*
+int drm_bridge_init(struct drm_device *dev, struct drm_bridge *bridge,
+		const struct drm_bridge_funcs *funcs)
+{
+	int ret;
+
+	drm_modeset_lock_all(dev);
+
+	ret = drm_mode_object_get(dev, &bridge->base, DRM_MODE_OBJECT_BRIDGE);
+	if (ret)
+		goto out;
+
+	bridge->dev = dev;
+	bridge->funcs = funcs;
+
+	list_add_tail(&bridge->head, &dev->mode_config.bridge_list);
+	dev->mode_config.num_bridge++;
+
+ out:
+	drm_modeset_unlock_all(dev);
+	return ret;
+}
+EXPORT_SYMBOL(drm_bridge_init);
+*/
+
+/**
+ * drm_bridge_cleanup - cleans up an initialised bridge
+ * @bridge: bridge to cleanup
+ *
+ * Cleans up the bridge but doesn't free the object.
+ */
+ /*
+void drm_bridge_cleanup(struct drm_bridge *bridge)
+{
+	struct drm_device *dev = bridge->dev;
+
+	drm_modeset_lock_all(dev);
+	drm_mode_object_put(dev, &bridge->base);
+	list_del(&bridge->head);
+	dev->mode_config.num_bridge--;
+	drm_modeset_unlock_all(dev);
+}
+EXPORT_SYMBOL(drm_bridge_cleanup);
+*/
+
+static DEFINE_MUTEX(encoder_lock);
+static LIST_HEAD(encoder_list);
+
+int drm_encoder_add(struct drm_encoder *encoder)
+{
+	mutex_lock(&encoder_lock);
+	list_add_tail(&encoder->list, &encoder_list);
+	mutex_unlock(&encoder_lock);
+
+	return 0;
+}
+EXPORT_SYMBOL(drm_encoder_add);
+
+void drm_encoder_remove(struct drm_encoder *encoder)
+{
+	mutex_lock(&encoder_lock);
+	list_del_init(&encoder->list);
+	mutex_unlock(&encoder_lock);
+}
+EXPORT_SYMBOL(drm_encoder_remove);
+
+#ifdef CONFIG_OF
+struct drm_encoder *of_drm_find_encoder(struct device_node *np)
+{
+	struct drm_encoder *encoder;
+
+	mutex_lock(&encoder_lock);
+
+	list_for_each_entry(encoder, &encoder_list, list) {
+		if (encoder->of_node == np) {
+			mutex_unlock(&encoder_lock);
+			return encoder;
+		}
+	}
+
+	mutex_unlock(&encoder_lock);
+	return NULL;
+}
+EXPORT_SYMBOL(of_drm_find_encoder);
+#endif
 
 /**
  * drm_encoder_init - Init a preallocated encoder
