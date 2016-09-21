@@ -243,15 +243,6 @@
 		BT,wake_host_irq = <&gpio4 31 GPIO_ACTIVE_HIGH>;
 		status = "okay";
 	};
-
-	wireless-wlan {
-		compatible = "wlan-platdata";
-		rockchip,grf = <&grf>;
-		wifi_chip_type = "ap6335";
-		sdio_vref = <1800>;
-		WIFI,host_wake_irq = <&gpio4 30 GPIO_ACTIVE_HIGH>;
-		status = "okay";
-	};
 };
 
 &cpu0 {
@@ -591,7 +582,7 @@
 	pinctrl-0 = <&sdio0_bus4 &sdio0_cmd &sdio0_clk &sdio0_int>;
 	sd-uhs-sdr104;
 	supports-sdio;
-	vmmc-supply = <&vbat_wl>;
+	//vmmc-supply = <&vbat_wl>;
 	vqmmc-supply = <&vccio_wl>;
 	status = "okay";
 };
