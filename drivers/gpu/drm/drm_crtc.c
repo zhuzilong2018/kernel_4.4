@@ -3131,7 +3131,7 @@ uint32_t drm_mode_legacy_fb_format(uint32_t bpp, uint32_t depth)
 			fmt = DRM_FORMAT_ARGB8888;
 		break;
 	default:
-		DRM_ERROR("bad bpp, assuming x8r8g8b8 pixel format\n");
+		DRM_INFO("bad bpp, assuming x8r8g8b8 pixel format\n");
 		fmt = DRM_FORMAT_XRGB8888;
 		break;
 	}
