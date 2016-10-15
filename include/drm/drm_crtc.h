@@ -582,6 +582,10 @@ struct drm_encoder_funcs {
  */
 struct drm_encoder {
 	struct drm_device *dev;
+#ifdef CONFIG_OF
+	struct device_node *of_node;
+#endif
+	struct list_head list;
 	struct list_head head;
 
 	struct drm_mode_object base;
@@ -666,6 +670,10 @@ struct drm_encoder {
 struct drm_connector {
 	struct drm_device *dev;
 	struct device_node *port;
+#ifdef CONFIG_OF
+	struct device_node *of_node;
+#endif
+	struct list_head list;
 	struct device *kdev;
 	struct device_attribute *attr;
 	struct list_head head;
@@ -1217,6 +1225,9 @@ static inline uint32_t drm_crtc_mask(struct drm_crtc *crtc)
 
 extern void drm_connector_ida_init(void);
 extern void drm_connector_ida_destroy(void);
+extern int drm_connector_add(struct drm_connector *connector);
+extern void drm_connector_remove(struct drm_connector *connector);
+extern struct drm_connector *of_drm_find_connector(struct device_node *np);
 extern int drm_connector_init(struct drm_device *dev,
 			      struct drm_connector *connector,
 			      const struct drm_connector_funcs *funcs,
@@ -1228,6 +1239,10 @@ extern void drm_connector_cleanup(struct drm_connector *connector);
 extern unsigned int drm_connector_index(struct drm_connector *connector);
 /* helper to unplug all connectors from sysfs for device */
 extern void drm_connector_unplug_all(struct drm_device *dev);
+
+//extern int drm_bridge_init(struct drm_device *dev, struct drm_bridge *bridge,
+			   //const struct drm_bridge_funcs *funcs);
+//extern void drm_bridge_cleanup(struct drm_bridge *bridge);
 
 extern int drm_bridge_add(struct drm_bridge *bridge);
 extern void drm_bridge_remove(struct drm_bridge *bridge);
@@ -1244,6 +1259,10 @@ void drm_bridge_mode_set(struct drm_bridge *bridge,
 			struct drm_display_mode *adjusted_mode);
 void drm_bridge_pre_enable(struct drm_bridge *bridge);
 void drm_bridge_enable(struct drm_bridge *bridge);
+
+extern int drm_encoder_add(struct drm_encoder *encoder);
+extern void drm_encoder_remove(struct drm_encoder *encoder);
+extern struct drm_encoder *of_drm_find_encoder(struct device_node *np);
 
 extern __printf(5, 6)
 int drm_encoder_init(struct drm_device *dev,

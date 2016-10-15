@@ -248,11 +248,17 @@ SUBARCH := $(shell uname -m | sed -e s/i.86/x86/ -e s/x86_64/x86/ \
 # "make" in the configured kernel build directory always uses that.
 # Default value for CROSS_COMPILE is not to prefix executables
 # Note: Some architectures assign CROSS_COMPILE in their arch/*/Makefile
-ARCH		?= arm64
+ARCH		?= arm
 ARCH		?= $(SUBARCH)
 ifeq ($(ARCH),arm64)
 ifneq ($(wildcard $(srctree)/../prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9),)
 CROSS_COMPILE	?= $(srctree)/../prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin/aarch64-linux-android-
+endif
+endif
+
+ifeq ($(ARCH),arm)
+ifneq ($(wildcard $(srctree)/../prebuilts/gcc/linux-x86/arm/arm-eabi-4.6),)
+CROSS_COMPILE	?= $(srctree)/../prebuilts/gcc/linux-x86/arm/arm-eabi-4.6/bin/arm-eabi-
 endif
 endif
 CROSS_COMPILE	?= $(CONFIG_CROSS_COMPILE:"%"=%)
