@@ -47,8 +47,10 @@ static void rga_dma_flush_range(void *ptr, int size)
 #ifdef CONFIG_ARM
 	dmac_flush_range(ptr, ptr + size);
 	outer_flush_range(virt_to_phys(ptr), virt_to_phys(ptr + size));
-#elif CONFIG_ARM64
+#else 
+#ifdef CONFIG_ARM64
 	__dma_flush_range(ptr, ptr + size);
+#endif
 #endif
 }
 
@@ -550,13 +552,13 @@ int rockchip_rga_set_cmdlist_ioctl(struct drm_device *drm_dev, void *data,
 	 * command have two integer, one for register offset, another for
 	 * register value.
 	 */
-	if (copy_from_user(cmdlist->data, (void __user *)req->cmd,
+	if (copy_from_user(cmdlist->data, (void __user *)(__u32)req->cmd,
 			   sizeof(struct drm_rockchip_rga_cmd) * req->cmd_nr))
 		return -EFAULT;
 	cmdlist->last += req->cmd_nr * 2;
 
 	if (copy_from_user(&cmdlist->data[cmdlist->last],
-			   (void __user *)req->cmd_buf,
+			   (void __user *)(__u32)req->cmd_buf,
 			   sizeof(struct drm_rockchip_rga_cmd) * req->cmd_buf_nr))
 		return -EFAULT;
 	cmdlist->last += req->cmd_buf_nr * 2;

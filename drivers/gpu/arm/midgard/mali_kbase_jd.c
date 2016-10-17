@@ -366,7 +366,7 @@ static int kbase_jd_umm_map(struct kbase_context *kctx, struct kbase_va_region *
 	}
 
 	if (WARN_ONCE(count < reg->nr_pages,
-			"sg list from dma_buf_map_attachment < dma_buf->size=%zu, count : %zu, reg->nr_pages : %lu. \n",
+			"sg list from dma_buf_map_attachment < dma_buf->size=%zu, count : %zu, reg->nr_pages : %zu. \n",
 			alloc->imported.umm.dma_buf->size,
 			count,
 			reg->nr_pages)) {
