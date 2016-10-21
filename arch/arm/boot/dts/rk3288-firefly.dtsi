@@ -382,6 +382,11 @@
 	status = "ok";
 };
 
+&gpu {
+	mali-supply = <&vdd_gpu>;
+	status = "okay";
+};
+
 &hdmi {
 	#address-cells = <1>;
 	#size-cells = <0>;
